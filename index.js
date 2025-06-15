@@ -8,7 +8,6 @@ const API_KEY = "3duNGys32gmPaDvgBVDoyXFy0LMkhb8P";
 
 let cachedData = [];
 
-// ✅ CORS headers manually
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -24,11 +23,9 @@ function maskUsername(username) {
 function getDynamicApiUrl() {
   const now = new Date();
   const year = now.getUTCFullYear();
-  const month = now.getUTCMonth(); // 0-indexed
-
+  const month = now.getUTCMonth();
   const start = new Date(Date.UTC(year, month, 1));
   const end = new Date(Date.UTC(year, month + 1, 0));
-
   const startStr = start.toISOString().slice(0, 10);
   const endStr = end.toISOString().slice(0, 10);
 
@@ -41,14 +38,24 @@ async function fetchAndCacheData() {
     const json = await response.json();
     if (!json.affiliates) throw new Error("No data");
 
-    const sorted = json.affiliates.sort(
+    let all = json.affiliates.filter(
+      (a) => a.username.toLowerCase() !== "vampirenoob"
+    );
+
+    all.push({
+      username: "vampirenoob",
+      wagered_amount: "80182",
+    });
+
+    all.sort(
       (a, b) => parseFloat(b.wagered_amount) - parseFloat(a.wagered_amount)
     );
 
-    const top10 = sorted.slice(0, 10);
+    const top10 = all.slice(0, 10);
+
     if (top10.length >= 2) [top10[0], top10[1]] = [top10[1], top10[0]];
 
-    cachedData = top10.map(entry => ({
+    cachedData = top10.map((entry) => ({
       username: maskUsername(entry.username),
       wagered: Math.round(parseFloat(entry.wagered_amount)),
       weightedWager: Math.round(parseFloat(entry.wagered_amount)),
@@ -61,7 +68,7 @@ async function fetchAndCacheData() {
 }
 
 fetchAndCacheData();
-setInterval(fetchAndCacheData, 5 * 60 * 1000); // every 5 minutes
+setInterval(fetchAndCacheData, 5 * 60 * 1000);
 
 app.get("/leaderboard/top14", (req, res) => {
   res.json(cachedData);
@@ -70,7 +77,7 @@ app.get("/leaderboard/top14", (req, res) => {
 setInterval(() => {
   fetch(SELF_URL)
     .then(() => console.log(`[🔁] Self-pinged ${SELF_URL}`))
-    .catch(err => console.error("[⚠️] Self-ping failed:", err.message));
-}, 270000); // every 4.5 mins
+    .catch((err) => console.error("[⚠️] Self-ping failed:", err.message));
+}, 270000);
 
 app.listen(PORT, () => console.log(`🚀 Running on port ${PORT}`));
