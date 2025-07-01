@@ -38,24 +38,17 @@ async function fetchAndCacheData() {
     const json = await response.json();
     if (!json.affiliates) throw new Error("No data");
 
-    let all = json.affiliates.filter(
-      (a) => a.username.toLowerCase() !== "vampirenoob"
-    );
+    const sorted = json.affiliates
+      .filter((a) => a.username && a.wagered_amount)
+      .sort((a, b) => parseFloat(b.wagered_amount) - parseFloat(a.wagered_amount))
+      .slice(0, 10);
 
-    all.push({
-      username: "vampirenoob",
-      wagered_amount: "80182",
-    });
+    // ⛓ Swap top 2 entries
+    if (sorted.length >= 2) {
+      [sorted[0], sorted[1]] = [sorted[1], sorted[0]];
+    }
 
-    all.sort(
-      (a, b) => parseFloat(b.wagered_amount) - parseFloat(a.wagered_amount)
-    );
-
-    const top10 = all.slice(0, 10);
-
-    if (top10.length >= 2) [top10[0], top10[1]] = [top10[1], top10[0]];
-
-    cachedData = top10.map((entry) => ({
+    cachedData = sorted.map((entry) => ({
       username: maskUsername(entry.username),
       wagered: Math.round(parseFloat(entry.wagered_amount)),
       weightedWager: Math.round(parseFloat(entry.wagered_amount)),
