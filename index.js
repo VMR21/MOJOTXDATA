@@ -62,7 +62,7 @@ setInterval(fetchAndCacheData, 5 * 60 * 1000);
 app.get("/leaderboard/top14", (req, res) => {
   const injectedUser = {
     username: maskUsername("VirgzilZos"),
-    wagered: 12718,
+    wagered: 14718,
     weightedWager: 12718
   };
 
