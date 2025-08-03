@@ -63,7 +63,7 @@ app.get("/leaderboard/top14", (req, res) => {
   const injectedUser = {
     username: maskUsername("VirgzilZos"),
     wagered: 14718,
-    weightedWager: 12718
+    weightedWager: 14718
   };
 
   // Remove existing masked VirgzilZos
